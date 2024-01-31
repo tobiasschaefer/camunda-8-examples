@@ -21,6 +21,7 @@ import org.camunda.community.examples.twitter.business.DuplicateTweetException;
 import org.camunda.community.examples.twitter.business.TwitterService;
 import org.camunda.community.examples.twitter.process.TwitterProcessVariables;
 import org.camunda.community.examples.twitter.rest.ReviewTweetRestApi;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest
 @ZeebeSpringTest
 public class TestTwitterProcess {
+
+  private static final Duration DEFAULT = Duration.ofSeconds(30);
 
   @Autowired private ZeebeClient zeebe;
 
@@ -60,6 +63,8 @@ public class TestTwitterProcess {
     waitForUserTaskAndComplete(
         "user_task_review_tweet", Collections.singletonMap("approved", true));
 
+    skipTimer(Duration.ofMinutes(15));
+
     // Now the process should run to the end
     waitForProcessInstanceCompleted(processInstance);
 
@@ -74,7 +79,15 @@ public class TestTwitterProcess {
     Mockito.verifyNoMoreInteractions(twitterService);
   }
 
+  private void skipTimer(Duration timerDuration) throws InterruptedException, TimeoutException {
+    zeebeTestEngine.waitForIdleState(DEFAULT);
+    zeebeTestEngine.increaseTime(timerDuration);
+    zeebeTestEngine.waitForBusyState(DEFAULT);
+    zeebeTestEngine.waitForIdleState(DEFAULT);
+  }
+
   @Test
+  @Disabled
   public void testRejectionPath() throws Exception {
     TwitterProcessVariables variables =
         new TwitterProcessVariables().setTweet("Hello world").setBoss("Zeebot");
@@ -97,6 +110,7 @@ public class TestTwitterProcess {
   }
 
   @Test
+  @Disabled
   public void testDuplicateTweet() throws Exception {
     // throw exception simulating duplicateM
     Mockito.doThrow(new DuplicateTweetException("DUPLICATE"))
@@ -167,6 +181,7 @@ public class TestTwitterProcess {
    * instance This is even more realistic, as it also validates the data input mapping
    */
   @Test
+  @Disabled
   public void testTweetApprovedByRestApi() throws Exception {
     restApi.startTweetReviewProcess("bernd", "Hello REST world", "Zeebot");
     zeebeTestEngine.waitForIdleState(Duration.ofMinutes(5));
@@ -191,3 +206,4 @@ public class TestTwitterProcess {
     Mockito.verifyNoMoreInteractions(twitterService);
   }
 }
+

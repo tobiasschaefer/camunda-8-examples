@@ -22,6 +22,7 @@ import org.camunda.community.examples.twitter.business.TwitterService;
 import org.camunda.community.examples.twitter.process.TwitterProcessVariables;
 import org.camunda.community.examples.twitter.rest.ReviewTweetRestApi;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class TestTwitterProcess {
 
   @MockBean private TwitterService twitterService;
 
-  @Test
+  @RepeatedTest(10)
   public void testTweetApproved() throws Exception {
     // Prepare data input
     TwitterProcessVariables variables =
@@ -206,4 +207,5 @@ public class TestTwitterProcess {
     Mockito.verifyNoMoreInteractions(twitterService);
   }
 }
+
 
